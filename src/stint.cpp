@@ -35,6 +35,8 @@ Stint::ErrorCode Stint::parse() {
     if(next_buffer_idx == 0) return BUFFER_EMPTY;
     for(uint32_t cidx = 0; cidx < commands_size; cidx++) {
         const Command& cmd = commands[cidx];
+        // skip commands which do not have valid functions. Those shouldn't exist anyway
+        if(cmd.function == nullptr) continue;
         const char* name = cmd.name;
         const uint32_t name_len = strlen(name); // excluding null-terminator
         uint32_t match_count = 0;
