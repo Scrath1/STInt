@@ -1,0 +1,89 @@
+#include <gtest/gtest.h>
+#include "stint.h"
+
+#define BUF_SIZE (16)
+
+bool foo_called = false;
+void cmd_foo(const char* cmd, uint32_t cmd_len) {
+    foo_called = true;
+}
+
+bool foobar_called = false;
+void cmd_foobar(const char* cmd, uint32_t cmd_len) {
+    foobar_called = true;
+}
+
+uint32_t given_cmd_len = 0;
+char given_cmd[BUF_SIZE] = "";
+void cmd_stringCheck(const char* cmd, uint32_t cmd_len) {
+    given_cmd_len = cmd_len;
+    strncpy(given_cmd, cmd, cmd_len);
+}
+
+class Stint_Test: public testing::Test {
+protected:
+    Stint::Command commands[3] = {
+        {.name = "foo", .function = cmd_foo, .helptext = "Prints \"bar\""},
+        {.name = "foobar", .function = cmd_foobar, .helptext = ""},
+        {.name = "check", .function = cmd_stringCheck, .helptext = "Stores given length of string"}
+    };
+    char buf[BUF_SIZE] = "";
+
+    Stint stint{commands, sizeof(commands) / sizeof(commands[0]), buf, sizeof(buf)};
+
+    void SetUp() override {
+
+    }
+
+    void TearDown() override {
+        foo_called = false;
+        foobar_called = false;
+        memset(given_cmd, '\0', BUF_SIZE);
+        given_cmd_len = 0;
+    }
+};
+
+TEST_F(Stint_Test, BufferLimitTest) {
+    for(uint32_t i = 0; i < sizeof(buf) - 1; i++) {
+        EXPECT_EQ(Stint::SUCCESS, stint.ingest('a'));
+    }
+    EXPECT_EQ(Stint::BUFFER_FULL, stint.ingest('b'));
+}
+
+TEST_F(Stint_Test, BasicParsingTest) {
+    // Expect no called function due to missing end delimiter
+    constexpr char input1[] = "foo";
+    for(char c:input1) {
+        EXPECT_EQ(Stint::SUCCESS,stint.ingest(c));
+    }
+    EXPECT_FALSE(foo_called);
+    // Expect function foo to be called
+    char input2[] = "foo\n";
+    // making sure command delim is set correctly
+    input2[strlen(input2) - 1] = stint.getCommandDelim();
+    for(char c:input2) {
+        EXPECT_EQ(Stint::SUCCESS,stint.ingest(c));
+    }
+    EXPECT_TRUE(foo_called);
+    // Expect function foobar to be called and not foo
+    foo_called = false;
+    char input3[] = "foobar\n";
+    for(char c:input3) {
+        EXPECT_EQ(Stint::SUCCESS,stint.ingest(c));
+    }
+    EXPECT_TRUE(foobar_called);
+    EXPECT_FALSE(foo_called);
+}
+
+TEST_F(Stint_Test, CommandParameterTest) {
+    // Purpose of this test is to validate the correct passing of the remaining
+    // command content to the command function
+    constexpr char input1[] = "check this\n";
+    constexpr char expectedParam[] = "this";
+    constexpr uint32_t expectParam_size = sizeof(expectedParam);
+    for(auto c : input1) {
+        EXPECT_EQ(Stint::SUCCESS,stint.ingest(c));
+    }
+    EXPECT_EQ(expectParam_size, given_cmd_len);
+    EXPECT_STREQ(expectedParam, given_cmd);
+}

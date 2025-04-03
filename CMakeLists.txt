@@ -17,11 +17,12 @@ enable_testing()
 include_directories(include)
 
 file(GLOB stint_src
-    "include/stint.h" "src/stint.c"
+    "include/stint.h" "src/stint.cpp"
 )
 
 add_executable(basic_example examples/basic-example.cpp ${stint_src})
 add_executable(run_unit_tests test/main.cpp
+        test/test_stint.cpp
         ${stint_src}
 )
 target_link_libraries(run_unit_tests gtest)
