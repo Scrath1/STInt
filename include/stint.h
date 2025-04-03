@@ -16,7 +16,7 @@ class Stint {
 
     struct Command {
         const char* name;
-        StintCmdFunction_t function;
+        const StintCmdFunction_t function;
         const char* helptext;
     };
 
@@ -49,6 +49,16 @@ class Stint {
      * @return
      */
     inline char getCommandDelim() const {return command_delim;}
+
+    /**
+     * Returns the array of commands
+     */
+    inline const Command* const getCommands() const {return commands;}
+
+    /**
+     * Returns the number of known commands
+     */
+    inline uint32_t getNumCommands() const {return commands_size;}
 
     /**
      * Empties the input buffer

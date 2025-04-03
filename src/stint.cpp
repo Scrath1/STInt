@@ -69,6 +69,6 @@ Stint::ErrorCode Stint::parse() {
             }
         }
     }
-
+    clearBuffer();
     return NO_MATCH;
 }
