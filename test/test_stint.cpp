@@ -51,16 +51,16 @@ TEST_F(Stint_Test, BufferLimitTest) {
 }
 
 TEST_F(Stint_Test, BasicParsingTest) {
-    // Expect no called function due to missing end delimiter
+    // Expect function foo to be called since \0 counts as string end delimiter
+    ASSERT_FALSE(foo_called);
     constexpr char input1[] = "foo";
     for(char c:input1) {
         EXPECT_EQ(Stint::SUCCESS,stint.ingest(c));
     }
-    EXPECT_FALSE(foo_called);
+    EXPECT_TRUE(foo_called);
+    foo_called = false;
     // Expect function foo to be called
     char input2[] = "foo\n";
-    // making sure command delim is set correctly
-    input2[strlen(input2) - 1] = stint.getCommandDelim();
     for(char c:input2) {
         EXPECT_EQ(Stint::SUCCESS,stint.ingest(c));
     }
@@ -86,4 +86,42 @@ TEST_F(Stint_Test, CommandParameterTest) {
     }
     EXPECT_EQ(expectParam_size, given_cmd_len);
     EXPECT_STREQ(expectedParam, given_cmd);
+}
+
+TEST_F(Stint_Test, FailedCommandBufferClearTest) {
+    // Checks that the buffer was cleared following a failed
+    // command so that the next valid command will work
+    constexpr char input1[] = "invalid";
+    for(auto c : input1) {
+        if(c != '\0') EXPECT_EQ(Stint::SUCCESS,stint.ingest(c));
+
+    }
+    EXPECT_EQ(Stint::NO_MATCH, stint.ingest('\0'));
+
+    ASSERT_FALSE(foo_called);
+    constexpr char input2[] = "foo\n";
+    for(auto c : input2) {
+        EXPECT_EQ(Stint::SUCCESS,stint.ingest(c));
+    }
+    EXPECT_TRUE(foo_called);
+}
+
+TEST_F(Stint_Test, LineEndingsTest) {
+    constexpr char input1[] = "foo\r";
+    for(auto c : input1) {
+        EXPECT_EQ(Stint::SUCCESS,stint.ingest(c));
+    }
+    EXPECT_TRUE(foo_called);
+    foo_called = false;
+    constexpr char input2[] = "foo\n";
+    for(auto c : input2) {
+        EXPECT_EQ(Stint::SUCCESS,stint.ingest(c));
+    }
+    EXPECT_TRUE(foo_called);
+    foo_called = false;
+    constexpr char input3[] = "foo\r\n";
+    for(auto c : input3) {
+        EXPECT_EQ(Stint::SUCCESS,stint.ingest(c));
+    }
+    EXPECT_TRUE(foo_called);
 }

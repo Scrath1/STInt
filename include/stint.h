@@ -39,18 +39,6 @@ class Stint {
     ErrorCode ingest(char c);
 
     /**
-     * Sets the character which indicates the end of a command
-     * @param c
-     */
-    void setCommandDelim(char c);
-
-    /**
-     * Returns the currently used command delimiter
-     * @return
-     */
-    inline char getCommandDelim() const {return command_delim;}
-
-    /**
      * Returns the array of commands
      */
     inline const Command* const getCommands() const {return commands;}
@@ -66,6 +54,14 @@ class Stint {
     void clearBuffer();
 
    private:
+    /**
+     * Returns true if a character is a valid command end delimiter
+     * Valid characters are '\r', '\n', and '\0'
+     * @param c
+     * @return
+     */
+    static bool isLineEndDelim(char c);
+
     /**
      * Checks for a command in the input buffer and executes the respective function
      * @return SUCCESS on success
@@ -84,8 +80,6 @@ class Stint {
     char* input_buffer;
     // next free char index in the input_buffer
     uint32_t next_buffer_idx;
-    // Character which indicates the end of a command
-    char command_delim;
 };
 
 #endif  // STINT_H
