@@ -46,18 +46,31 @@ bool Stint::isLineEndDelim(char c) {
 
 Stint::ErrorCode Stint::parse() {
     if(next_buffer_idx == 0) return BUFFER_EMPTY;
-    for(uint32_t cidx = 0; cidx < commands_size; cidx++) {
-        const Command& cmd = commands[cidx];
-        // skip commands which do not have valid functions. Those shouldn't exist anyway
-        if(cmd.function == nullptr) continue;
+    for(uint32_t cmd_idx = 0; cmd_idx < commands_size; cmd_idx++) {
+        const Command& cmd = commands[cmd_idx];
+        // skip commands which do not have valid functions or names. Those shouldn't exist anyway
+        if(cmd.function == nullptr || cmd.name == nullptr) continue;
         const char* name = cmd.name;
         const uint32_t name_len = strlen(name); // excluding null-terminator
+
         uint32_t match_count = 0;
-        for(uint32_t i = 0; i < next_buffer_idx; i++) {
+        bool skip_cmd = false;
+        for(uint32_t i = 0; i < next_buffer_idx && !skip_cmd; i++) {
             const char c = input_buffer[i];
             // If characters sequentially match the contents of a command
             // name, increase the match_count
-            if(c == name[match_count] && c != '\0') match_count++;
+            if(c == name[match_count] && c != '\0') {
+                // we need to differentiate between randomly matching sets of characters
+                // and full words matching the command.
+                // e.g. "barfoo" should not be able to trigger the "foo" command.
+                // as such the very first char in the buffer has to match the currently checked command
+                // otherwise this command is skipped and the next one is analyzed
+                if(match_count == 0 && i != 0) {
+                    // effectively skip the rest of the loop and move to the next command
+                    skip_cmd = true;
+                }
+                match_count++;
+            }
             else {
                 // Character doesn't match
                 // case 1: End of string/line. Probably a one word command

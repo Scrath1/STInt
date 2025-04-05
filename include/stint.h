@@ -83,7 +83,8 @@ class Stint {
     static bool isLineEndDelim(char c);
 
     /**
-     * Checks for a command in the input buffer and executes the respective function
+     * Checks for a command in the input buffer and executes the respective function.
+     * @note The command word has to begin with the very first character in the input buffer
      * @return SUCCESS on success
      * @return BUFFER_EMPTY if the input buffer is empty
      * @return NO_MATCH if no matching command was found

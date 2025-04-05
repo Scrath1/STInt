@@ -13,6 +13,11 @@ void cmd_foobar(const char* cmd, uint32_t cmd_len) {
     foobar_called = true;
 }
 
+bool barfoo_called = false;
+void cmd_barfoo(const char* cmd, uint32_t cmd_len) {
+    barfoo_called = true;
+}
+
 uint32_t given_cmd_len = 0;
 char given_cmd[BUF_SIZE] = "";
 void cmd_stringCheck(const char* cmd, uint32_t cmd_len) {
@@ -22,10 +27,11 @@ void cmd_stringCheck(const char* cmd, uint32_t cmd_len) {
 
 class Stint_Test: public testing::Test {
 protected:
-    Stint::Command commands[3] = {
+    Stint::Command commands[4] = {
         {.name = "foo", .function = cmd_foo, .helptext = "Prints \"bar\""},
         {.name = "foobar", .function = cmd_foobar, .helptext = ""},
-        {.name = "check", .function = cmd_stringCheck, .helptext = "Stores given length of string"}
+        {.name = "check", .function = cmd_stringCheck, .helptext = "Stores given length of string"},
+        {.name = "barfoo", .function = cmd_barfoo, .helptext = ""}
     };
     char buf[BUF_SIZE] = "";
 
@@ -73,6 +79,17 @@ TEST_F(Stint_Test, BasicParsingTest) {
     }
     EXPECT_TRUE(foobar_called);
     EXPECT_FALSE(foo_called);
+    // Expect function barfoo to be called and not foo
+    foo_called = false;
+    barfoo_called = false;
+    ASSERT_FALSE(barfoo_called);
+    ASSERT_FALSE(foo_called);
+    char input4[] = "barfoo";
+    for(char c:input4) {
+        EXPECT_EQ(Stint::SUCCESS, stint.ingest(c));
+    }
+    EXPECT_FALSE(foo_called);
+    EXPECT_TRUE(barfoo_called);
 }
 
 TEST_F(Stint_Test, CommandParameterTest) {
