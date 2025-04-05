@@ -144,3 +144,19 @@ TEST_F(Stint_Test, BackspaceTest) {
     stint.deleteLastChar();
     EXPECT_EQ(0, stint.fillLevel());
 }
+
+TEST_F(Stint_Test, AutoBackspaceTest){
+    stint.setAutoBackspace(true);
+    constexpr char input1[] = "fooo\b\n";
+    for(char c:input1) {
+        EXPECT_EQ(Stint::SUCCESS, stint.ingest(c));
+    }
+    EXPECT_TRUE(foo_called);
+    foo_called = false;
+    stint.setAutoBackspace(false);
+    constexpr char input2[] = "fooo\b";
+    for(uint32_t i = 0; i < strlen(input2); i++) {
+        EXPECT_EQ(Stint::SUCCESS, stint.ingest(input2[i]));
+    }
+    EXPECT_EQ(Stint::NO_MATCH, stint.ingest('\n'));
+}

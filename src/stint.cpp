@@ -10,6 +10,11 @@ Stint::Stint(const Command commands[], uint32_t commands_size, char input_buffer
     next_buffer_idx = 0;
 }
 Stint::ErrorCode Stint::ingest(char c) {
+    // Auto backspace interpretation
+    if(enable_auto_backspace && c == '\b'){
+        deleteLastChar();
+        return SUCCESS;
+    }
     // multiple command delims without content between them are ignored and
     // not added to the buffer
     if(isLineEndDelim(c) && next_buffer_idx > 0) {

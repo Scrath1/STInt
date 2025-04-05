@@ -35,6 +35,7 @@ class Stint {
      * @param c [IN] Character to add to the input buffer
      * @return SUCCESS on success
      * @return BUFFER_FULL if the input buffer is full
+     * @return Any value returned by parse if a line ending char is ingested
      */
     ErrorCode ingest(char c);
 
@@ -65,6 +66,13 @@ class Stint {
      */
     void clearBuffer();
 
+    /**
+     * Enables automatic interpretation of backspace characters in the ingest function.
+     * When enabled, an ingested backspace character will cause the newest character in
+     * the input buffer to be deleted.
+     */
+    inline void setAutoBackspace(bool enabled){enable_auto_backspace = enabled;}
+
    private:
     /**
      * Returns true if a character is a valid command end delimiter
@@ -92,6 +100,8 @@ class Stint {
     char* input_buffer;
     // next free char index in the input_buffer
     uint32_t next_buffer_idx;
+    // If enabled deletes last character in buffer upon ingesting a backspace character
+    bool enable_auto_backspace = false;
 };
 
 #endif  // STINT_H
