@@ -25,6 +25,14 @@ Stint::ErrorCode Stint::ingest(char c) {
     return SUCCESS;
 }
 
+void Stint::deleteLastChar(){
+    if(next_buffer_idx > 0){
+        // yes this could be a one-liner but I think this is more readable
+        next_buffer_idx--;
+        input_buffer[next_buffer_idx] = '\0';
+    }
+}
+
 void Stint::clearBuffer() { next_buffer_idx = 0; }
 
 bool Stint::isLineEndDelim(char c) {

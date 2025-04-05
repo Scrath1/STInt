@@ -39,6 +39,18 @@ class Stint {
     ErrorCode ingest(char c);
 
     /**
+     * Removes the last ingested character from the buffer.
+     * If no data is in the buffer, nothing happens
+     */
+    void deleteLastChar();
+
+    /**
+     * Returns the number of characters currently in the input buffer
+     * @return
+     */
+    uint32_t fillLevel() const {return next_buffer_idx;}
+
+    /**
      * Returns the array of commands
      */
     inline const Command* const getCommands() const {return commands;}

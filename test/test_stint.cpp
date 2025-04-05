@@ -125,3 +125,22 @@ TEST_F(Stint_Test, LineEndingsTest) {
     }
     EXPECT_TRUE(foo_called);
 }
+
+TEST_F(Stint_Test, BackspaceTest) {
+    constexpr char input1[] = "fooo";
+    constexpr uint32_t input1_len = strlen(input1); // number of characters excluding null-terminator
+    for(uint32_t i = 0; i < input1_len; i++) {
+        EXPECT_EQ(Stint::SUCCESS,stint.ingest((input1[i])));
+    }
+    EXPECT_EQ(input1_len, stint.fillLevel());
+    stint.deleteLastChar();
+    EXPECT_EQ(input1_len - 1, stint.fillLevel());
+    EXPECT_EQ(Stint::SUCCESS, stint.ingest('\n'));
+    EXPECT_TRUE(foo_called);
+
+    // Also check correct handling if no data is in buffer
+    stint.clearBuffer();
+    ASSERT_EQ(0, stint.fillLevel());
+    stint.deleteLastChar();
+    EXPECT_EQ(0, stint.fillLevel());
+}
