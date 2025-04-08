@@ -12,11 +12,22 @@ class Stint {
         SUCCESS = 0
     };
 
+    /**
+     * Function signature for commands
+     * @param cmd [IN] The remainded of the command input.
+     *  If the command name is `echo` and the user input is `echo hello world`,
+     *  this variable will contain `hello world\0`.
+     * @param cmd_len [IN] The length of the cmd string, including the null-terminator.
+     */
     typedef void (*StintCmdFunction_t)(const char* cmd, uint32_t cmd_len);
 
     struct Command {
+        // Name of the command. This string is used to trigger the command function
         const char* name;
+        // Function to execute
         const StintCmdFunction_t function;
+        // Optional helptext. The library itself does not use this string but
+        // you can use it for printing a list of commands and usage instructions.
         const char* helptext;
     };
 
